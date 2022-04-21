@@ -23,6 +23,21 @@
 			if (wParam == 'F')
 				SetWindowText(hWnd, TEXT("lvRainOMEGA"));
 			break;
+		case WM_CHAR:
+			{
+				static std::wstring title;
+				title.push_back(static_cast<wchar_t>(wParam));
+				SetWindowText(hWnd, title.c_str());
+			}
+			break;
+		case WM_LBUTTONDOWN:
+			{
+				POINTS pt = MAKEPOINTS(lParam);
+				std::wstringstream oss;
+				oss << "(" << pt.x << "," << pt.y << ")";
+				SetWindowText(hWnd, oss.str().c_str());
+			}
+			break;
 		}
 		return (DefWindowProc(hWnd, msg, wParam, lParam));
 	}
