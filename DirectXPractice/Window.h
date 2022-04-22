@@ -2,16 +2,31 @@
 #ifndef WINDOW_H
 # define WINDOW_H
 
-# include "lvrain.h"
+# include "LvRain.h"
+# include "LvRainException.h"
 # include <vector>
 # include <optional>
 //# include "Graphics.h"
 
 class Window {
+public:
+	class Exception : public LvRainException
+	{
+	public:
+		Exception(int line, const char* file, HRESULT hr) noexcept;
+		const char* what() const noexcept;
+		const char* getType() const noexcept;
+		std::string translateErrorCode(HRESULT hr) const noexcept;
+		HRESULT getErrorCode() const noexcept;
+		std::string getErrorString() const noexcept;
+	private:
+		HRESULT hr;
+	};
+
 private:
 	class WindowClass {
 	public:
-		static const wchar_t* getName() noexcept;
+		static const char* getName() noexcept;
 		static HINSTANCE getInstance() noexcept;
 	private:
 		WindowClass() noexcept;
@@ -19,12 +34,12 @@ private:
 		WindowClass(const WindowClass&) = delete;
 		WindowClass& operator=(const WindowClass&) = delete;
 
-		static constexpr const wchar_t* wndClassName = TEXT("lv Rain Direct3D Engine Window");
+		static constexpr const char* wndClassName = "lv Rain Direct3D Engine Window";
 		static WindowClass wndClass;
 		HINSTANCE hInst;
 	};
 public:
-	Window(int width, int height, const wchar_t* name) noexcept;
+	Window(int width, int height, const wchar_t* name);
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
@@ -59,4 +74,7 @@ private:
 	//std::string					commandLine;
 };
 
+// error exception helper macro
+#define LVWND_EXCEPT(hr) Window::Exception(__LINE__, __FILE__, hr)
+#define LVWND_LAST_EXCEPT() Window::Exception(__LINE__, __FILE__, GetLastError())
 #endif

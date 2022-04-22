@@ -1,6 +1,46 @@
 #include "Window.h"
 
-// Window Class
+
+// ==== Exception ==== //
+
+Window::Exception::Exception(int line, const char* file, HRESULT hr) noexcept
+	: LvRainException(line, file), hr(hr) {}
+
+const char* Window::Exception::what() const noexcept {
+	std::ostringstream oss;
+	oss << getType() << std::endl
+		<< "[Error Code] " << getErrorCode() << std::endl
+		<< "[Description] " << getErrorString() << std::endl
+		<< getOriginString();
+	whatBuffer = oss.str();
+	return (whatBuffer.c_str());
+}
+
+const char* Window::Exception::getType() const noexcept {
+	return ("Lv Window Exception");
+}
+
+std::string Window::Exception::translateErrorCode(HRESULT hr) const noexcept {
+	char*	pMsgBuf = nullptr;
+	DWORD	nMsgLen = FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		reinterpret_cast<LPWSTR>(&pMsgBuf), 0, nullptr);
+	if (nMsgLen == 0)
+		return ("Unidentified error code");
+	std::string errorString = pMsgBuf;
+	LocalFree(pMsgBuf);
+	return (errorString);
+}
+
+HRESULT Window::Exception::getErrorCode() const noexcept {
+	return (hr);
+}
+std::string  Window::Exception::getErrorString() const noexcept {
+	return (translateErrorCode(hr));
+}
+
+// ==== Window Class ====//
 Window::WindowClass	Window::WindowClass::wndClass;
 
 Window::WindowClass::WindowClass() noexcept : hInst(HInstance()) {
@@ -15,16 +55,16 @@ Window::WindowClass::WindowClass() noexcept : hInst(HInstance()) {
 	wc.hCursor = nullptr;
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
-	wc.lpszClassName = getName();
+	wc.lpszClassName = reinterpret_cast<LPCWSTR>(getName());
 	wc.hIconSm = nullptr;
 	RegisterClassEx(&wc);
 }
 
 Window::WindowClass::~WindowClass() noexcept {
-	UnregisterClass(wndClassName, getInstance());
+	UnregisterClass(reinterpret_cast<LPCWSTR>(wndClassName), getInstance());
 }
 
-const wchar_t* Window::WindowClass::getName() noexcept {
+const char* Window::WindowClass::getName() noexcept {
 	return (wndClassName);
 }
 
@@ -33,22 +73,25 @@ HINSTANCE Window::WindowClass::getInstance() noexcept {
 }
 
 
-// Window
+// ==== Window ====//
 
-Window::Window(int width, int height, const wchar_t* name) noexcept {
+Window::Window(int width, int height, const wchar_t* name) : width(width), height(height) {
 	RECT wr;
 	wr.left = 100;
 	wr.right = width + wr.left;
 	wr.top = 100;
 	wr.bottom = height + wr.top;
 	//adjust wr draw area based on style options (TF for menu)
-	AdjustWindowRect(&wr, DWSTYLE, FALSE);
-
-	hWnd = CreateWindow(WindowClass::getName(), name, DWSTYLE, CW_USEDEFAULT, CW_USEDEFAULT,
+	if (!AdjustWindowRect(&wr, DWSTYLE, FALSE))
+		throw LVWND_LAST_EXCEPT();
+	
+	hWnd = CreateWindow(reinterpret_cast<LPCWSTR>(WindowClass::getName()), name, DWSTYLE, CW_USEDEFAULT, CW_USEDEFAULT,
 		wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::getInstance(), this);
 
-	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	if (!hWnd)
+		throw LVWND_LAST_EXCEPT();
 
+	ShowWindow(hWnd, SW_SHOWDEFAULT);
 }
 
 Window::~Window() {
