@@ -6,9 +6,11 @@
 # include "LvRainException.h"
 # include "Keyboard.h"
 # include "Mouse.h"
+# include "Graphics.h"
 # include <vector>
 # include <optional>
-//# include "Graphics.h"
+# include <memory>
+
 
 class Window {
 public:
@@ -49,8 +51,8 @@ public:
 	static std::optional<int> processMessages() noexcept;
 	/*void	enableCursor() noexcept;
 	void	diableCursor() noexcept;
-	bool	cursorEnabled() const noexcept;
-	Graphics& Gfx();*/
+	bool	cursorEnabled() const noexcept;*/
+	Graphics& Gfx();
 private:
 	/*void	confineCursor() noexcept;
 	void	freeCursor() noexcept;
@@ -70,7 +72,7 @@ private:
 	int		width;
 	int		height;
 	HWND	hWnd;
-	//std::unique_ptr<Graphics>	pGfx;
+	std::unique_ptr<Graphics>	pGfx;
 	//std::vector<BYTE>			rawBuffer;
 	//std::string					commandLine;
 };
