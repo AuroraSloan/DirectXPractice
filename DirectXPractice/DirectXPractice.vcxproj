@@ -155,6 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="App.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="MainWin.cpp" />
     <ClCompile Include="LvRainException.cpp" />
@@ -162,6 +163,7 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="App.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="LvRainException.h" />
     <ClInclude Include="LvRain.h" />
