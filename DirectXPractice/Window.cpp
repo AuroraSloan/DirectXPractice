@@ -1,4 +1,5 @@
 #include "Window.h"
+#
 
 
 // ==== Exception ==== //
@@ -98,6 +99,15 @@ Window::~Window() {
 	DestroyWindow(hWnd);
 }
 
+void Window::setTitle(const std::string& title) {
+	wchar_t newTitle[MAX_NAME_STRING + 1];
+	size_t tsz = strlen(title.c_str());
+	if (mbstowcs_s(&tsz, newTitle, MAX_NAME_STRING, title.c_str(), MAX_NAME_STRING - 1) != 0)
+		errno = EINVAL;
+	if (SetWindowText(hWnd, newTitle) == 0)
+		throw LVWND_LAST_EXCEPT();
+}
+
 LRESULT CALLBACK Window::handleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept {
 	if (msg == WM_NCCREATE) {
 		const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
@@ -151,6 +161,128 @@ LRESULT Window::handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		kbd.OnChar(static_cast<unsigned char>(wParam));*/
 		break;
 		/*********** END KEYBOARD MESSAGES ***********/
+
+		/************* MOUSE MESSAGES ****************/
+	case WM_MOUSEMOVE:
+	{
+		const POINTS pt = MAKEPOINTS(lParam);
+		// cursorless exclusive gets first dibs
+		/*if (!cursorEnabled)
+		{
+			if (!mouse.IsInWindow())
+			{
+				SetCapture(hWnd);
+				mouse.OnMouseEnter();
+				HideCursor();
+			}
+			break;
+		}
+		// stifle this mouse message if imgui wants to capture
+		if (imio.WantCaptureMouse)
+		{
+			break;
+		}*/
+		// in client region -> log move, and log enter + capture mouse (if not previously in window)
+		if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height)
+		{
+			mouse.OnMouseMove(pt.x, pt.y);
+			if (!mouse.IsInWindow())
+			{
+				SetCapture(hWnd);
+				mouse.OnMouseEnter();
+			}
+		}
+		// not in client -> log move / maintain capture if button down
+		else
+		{
+			if (wParam & (MK_LBUTTON | MK_RBUTTON))
+			{
+				mouse.OnMouseMove(pt.x, pt.y);
+			}
+			// button up -> release capture / log event for leaving
+			else
+			{
+				ReleaseCapture();
+				mouse.OnMouseLeave();
+			}
+		}
+		break;
+	}
+	case WM_LBUTTONDOWN:
+	{
+		/*SetForegroundWindow(hWnd);
+		if (!cursorEnabled)
+		{
+			ConfineCursor();
+			HideCursor();
+		}
+		// stifle this mouse message if imgui wants to capture
+		if (imio.WantCaptureMouse)
+		{
+			break;
+		}*/
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnLeftPressed(pt.x, pt.y);
+		break;
+	}
+	case WM_RBUTTONDOWN:
+	{
+		// stifle this mouse message if imgui wants to capture
+		/*if (imio.WantCaptureMouse)
+		{
+			break;
+		}*/
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnRightPressed(pt.x, pt.y);
+		break;
+	}
+	case WM_LBUTTONUP:
+	{
+		// stifle this mouse message if imgui wants to capture
+		/*if (imio.WantCaptureMouse)
+		{
+			break;
+		}*/
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnLeftReleased(pt.x, pt.y);
+		// release mouse if outside of window
+		/*if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+		{
+			ReleaseCapture();
+			mouse.OnMouseLeave();
+		}*/
+		break;
+	}
+	case WM_RBUTTONUP:
+	{
+		// stifle this mouse message if imgui wants to capture
+		/*if (imio.WantCaptureMouse)
+		{
+			break;
+		}*/
+		const POINTS pt = MAKEPOINTS(lParam);
+		mouse.OnRightReleased(pt.x, pt.y);
+		// release mouse if outside of window
+		/*if (pt.x < 0 || pt.x >= width || pt.y < 0 || pt.y >= height)
+		{
+			ReleaseCapture();
+			mouse.OnMouseLeave();
+		}*/
+		break;
+	}
+	case WM_MOUSEWHEEL:
+	{
+		// stifle this mouse message if imgui wants to capture
+		/*if (imio.WantCaptureMouse)
+		{
+			break;
+		}*/
+		const POINTS pt = MAKEPOINTS(lParam);
+		const int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+		mouse.OnWheelDelta(pt.x, pt.y, delta);
+		break;
+	}
+	/************** END MOUSE MESSAGES **************/
 	}
 
 

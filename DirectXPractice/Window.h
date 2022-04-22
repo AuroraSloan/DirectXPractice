@@ -5,6 +5,7 @@
 # include "LvRain.h"
 # include "LvRainException.h"
 # include "Keyboard.h"
+# include "Mouse.h"
 # include <vector>
 # include <optional>
 //# include "Graphics.h"
@@ -44,6 +45,7 @@ public:
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
+	void setTitle(const std::string& title);
 
 	/*void	setTitle(const std::string& title);
 	void	enableCursor() noexcept;
@@ -63,7 +65,7 @@ private:
 	LRESULT handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 public:
 	Keyboard	kbd;
-	//Mouse		mouse;
+	Mouse		mouse;
 
 private:
 	//bool	cursorEndabled = true;
