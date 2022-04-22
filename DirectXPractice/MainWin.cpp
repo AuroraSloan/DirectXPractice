@@ -13,8 +13,8 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, INT) {
 	}
 	catch (const LvRainException& e)
 	{
-		wchar_t what[MAX_NAME_STRING+1];
-		wchar_t type[MAX_NAME_STRING+1];
+		wchar_t what[MAX_NAME_STRING];
+		wchar_t type[MAX_NAME_STRING];
 		size_t wsz = strlen(e.what());
 		size_t tsz = strlen(e.getType());
 		if (mbstowcs_s(&wsz, what, MAX_NAME_STRING, e.what(), MAX_NAME_STRING - 1) != 0 ||
@@ -24,7 +24,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, INT) {
 	}
 	catch (const std::exception& e)
 	{
-		wchar_t	what[MAX_NAME_STRING + 1];
+		wchar_t	what[MAX_NAME_STRING];
 		size_t	wsz = strlen(e.what());
 		if (mbstowcs_s(&wsz, what, MAX_NAME_STRING, e.what(), MAX_NAME_STRING - 1) != 0)
 			errno = EINVAL;

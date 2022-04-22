@@ -46,12 +46,10 @@ public:
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 	void setTitle(const std::string& title);
-
-	/*void	setTitle(const std::string& title);
-	void	enableCursor() noexcept;
+	static std::optional<int> processMessages() noexcept;
+	/*void	enableCursor() noexcept;
 	void	diableCursor() noexcept;
 	bool	cursorEnabled() const noexcept;
-	static std::optional<int> processMessage() noexcept;
 	Graphics& Gfx();*/
 private:
 	/*void	confineCursor() noexcept;

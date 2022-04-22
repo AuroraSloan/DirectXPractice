@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="LvRainTimer.cpp" />
     <ClCompile Include="MainWin.cpp" />
     <ClCompile Include="LvRainException.cpp" />
     <ClCompile Include="Mouse.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="LvRainException.h" />
     <ClInclude Include="LvRain.h" />
+    <ClInclude Include="LvRainTimer.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

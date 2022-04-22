@@ -2,19 +2,20 @@
 
 App::App() : wnd(800, 600, L"Lv Rain Booster") {}
 
-int	App::Go()
-{
-	MSG		msg = { 0 };
-	BOOL	gRes;
+App::~App() {}
 
-	while ((gRes = GetMessage(&msg, nullptr, 0, 0)) > 0) {
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+int	App::Go(){
+	while (true) {
+		if (const auto ecode = Window::processMessages())
+			return (*ecode);
+		DoFrame();
 	}
-
-	return (gRes == -1 ? -1 : static_cast<int>(msg.wParam));
+	return {};
 }
 
 void App::DoFrame() {
-
+	const float t = timer.Peek();
+	std::ostringstream oss;
+	oss << "Time elapsed: " << std::setprecision(1) << std::fixed << t << "s";
+	wnd.setTitle(oss.str());
 }
