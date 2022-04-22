@@ -4,6 +4,7 @@
 
 # include "LvRain.h"
 # include "LvRainException.h"
+# include "Keyboard.h"
 # include <vector>
 # include <optional>
 //# include "Graphics.h"
@@ -60,8 +61,8 @@ private:
 	static LRESULT CALLBACK handleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK handleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	LRESULT handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-//public:
-	//Keyboard	kbd;
+public:
+	Keyboard	kbd;
 	//Mouse		mouse;
 
 private:

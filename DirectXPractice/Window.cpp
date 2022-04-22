@@ -84,7 +84,7 @@ Window::Window(int width, int height, const wchar_t* name) : width(width), heigh
 	//adjust wr draw area based on style options (TF for menu)
 	if (!AdjustWindowRect(&wr, DWSTYLE, FALSE))
 		throw LVWND_LAST_EXCEPT();
-	
+
 	hWnd = CreateWindow(reinterpret_cast<LPCWSTR>(WindowClass::getName()), name, DWSTYLE, CW_USEDEFAULT, CW_USEDEFAULT,
 		wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::getInstance(), this);
 
@@ -119,6 +119,40 @@ LRESULT Window::handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return (0);
+
+	case WM_KILLFOCUS:
+		kbd.clearState();
+		break;
+
+		/*********** KEYBOARD MESSAGES ***********/
+	case WM_KEYDOWN:
+		// syskey commands need to be handled to track ALT key (VK_MENU) and F10
+	case WM_SYSKEYDOWN:
+		//stifle this keyboard message if imgui wants to capture
+		/*if (imio.WantCaptureKeyboard)
+			break;*/
+		if (!(lParam & 0x40000000) || kbd.autorepeatIsEnabled()) // filter autorepeat
+			kbd.onKeyPressed(static_cast<unsigned char>(wParam));
+		break;
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+		// stifle this keyboard message if imgui wants to capture
+		/*if (imio.WantCaptureKeyboard)
+			break;*/
+		kbd.onKeyReleased(static_cast<unsigned char>(wParam));
+		break;
+	case WM_CHAR:
+		kbd.onChar(static_cast<unsigned char>(wParam));
+		// stifle this keyboard message if imgui wants to capture
+		/*if (imio.WantCaptureKeyboard)
+		{
+			break;
+		}
+		kbd.OnChar(static_cast<unsigned char>(wParam));*/
+		break;
+		/*********** END KEYBOARD MESSAGES ***********/
 	}
+
+
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
