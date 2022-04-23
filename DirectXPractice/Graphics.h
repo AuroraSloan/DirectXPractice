@@ -2,11 +2,41 @@
 #ifndef GRAPHICS_H
 # define GRAPHICS_H
 
-# include "LvRain.h"
+# include <vector>
 # include <d3d11.h>
+# include "LvRain.h"
+# include "LvRainException.h"
+# include "DxgiInfoManager.h"
 
 class Graphics
 {
+public:
+	class Exception : public LvRainException
+	{
+		using LvRainException::LvRainException;
+	};
+	class HrException : public Exception
+	{
+	public:
+		HrException(int line, const char* file, HRESULT hr, std::vector<std::string> infoMsgs = {}) noexcept;
+		const char* what() const noexcept override;
+		const char* getType() const noexcept override;
+		HRESULT GetErrorCode() const noexcept;
+		std::string GetErrorString() const noexcept;
+		std::string GetErrorDescription() const noexcept;
+		std::string GetErrorInfo() const noexcept;
+	private:
+		HRESULT hr;
+		std::string info;
+	};
+	class DeviceRemovedException : public HrException
+	{
+		using HrException::HrException;
+	public:
+		const char* getType() const noexcept override;
+	private:
+		std::string reason;
+	};
 public:
 	Graphics(HWND hWnd );
 	Graphics(const Graphics&) = delete;
@@ -20,6 +50,9 @@ public:
 	}
 
 private:
+#ifndef NDEBUG
+	DxgiInfoManager infoManager;
+#endif
 	ID3D11Device* pDevice = nullptr;
 	IDXGISwapChain* pSwap = nullptr;
 	ID3D11DeviceContext* pContext = nullptr;

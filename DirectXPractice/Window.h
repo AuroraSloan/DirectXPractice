@@ -16,15 +16,25 @@ class Window {
 public:
 	class Exception : public LvRainException
 	{
+		using LvRainException::LvRainException;
 	public:
-		Exception(int line, const char* file, HRESULT hr) noexcept;
+		static std::string translateErrorCode(HRESULT hr) noexcept;
+	};
+	class HrException : public Exception {
+	public:
+		HrException(int line, const char* file, HRESULT hr) noexcept;
 		const char* what() const noexcept;
 		const char* getType() const noexcept;
-		std::string translateErrorCode(HRESULT hr) const noexcept;
 		HRESULT getErrorCode() const noexcept;
-		std::string getErrorString() const noexcept;
+		std::string getErrorDescription() const noexcept;
 	private:
 		HRESULT hr;
+	};
+	class NoGfxException : public Exception
+	{
+	public:
+		using Exception::Exception;
+		const char* getType() const noexcept override;
 	};
 
 private:
@@ -78,6 +88,7 @@ private:
 };
 
 // error exception helper macro
-#define LVWND_EXCEPT(hr) Window::Exception(__LINE__, __FILE__, hr)
-#define LVWND_LAST_EXCEPT() Window::Exception(__LINE__, __FILE__, GetLastError())
+#define LVWND_EXCEPT(hr) Window::HrException(__LINE__, __FILE__, hr)
+#define LVWND_LAST_EXCEPT() Window::HrException(__LINE__, __FILE__, GetLastError())
+#define LVWND_NOGFX_EXCEPT() Window::NoGfxException( __LINE__,__FILE__ )
 #endif

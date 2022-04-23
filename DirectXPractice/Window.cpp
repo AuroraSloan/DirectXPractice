@@ -1,27 +1,9 @@
 #include "Window.h"
-#
-
+#include <sstream>
 
 // ==== Exception ==== //
 
-Window::Exception::Exception(int line, const char* file, HRESULT hr) noexcept
-	: LvRainException(line, file), hr(hr) {}
-
-const char* Window::Exception::what() const noexcept {
-	std::ostringstream oss;
-	oss << getType() << std::endl
-		<< "[Error Code] " << getErrorCode() << std::endl
-		<< "[Description] " << getErrorString() << std::endl
-		<< getOriginString();
-	whatBuffer = oss.str();
-	return (whatBuffer.c_str());
-}
-
-const char* Window::Exception::getType() const noexcept {
-	return ("Lv Window Exception");
-}
-
-std::string Window::Exception::translateErrorCode(HRESULT hr) const noexcept {
+std::string Window::Exception::translateErrorCode(HRESULT hr) noexcept {
 	char*	pMsgBuf = nullptr;
 	DWORD	nMsgLen = FormatMessage(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -34,11 +16,33 @@ std::string Window::Exception::translateErrorCode(HRESULT hr) const noexcept {
 	return (errorString);
 }
 
-HRESULT Window::Exception::getErrorCode() const noexcept {
+Window::HrException::HrException(int line, const char* file, HRESULT hr) noexcept
+	: Exception(line, file), hr(hr) {}
+
+const char* Window::HrException::what() const noexcept {
+	std::ostringstream oss;
+	oss << getType() << std::endl
+		<< "[Error Code] 0x" << std::hex << std::uppercase << getErrorCode()
+		<< std::dec << " (" << (unsigned long)getErrorCode() << ")" << std::endl
+		<< "[Description] " << getErrorDescription() << std::endl
+		<< getOriginString();
+	whatBuffer = oss.str();
+	return (whatBuffer.c_str());
+}
+
+const char* Window::HrException::getType() const noexcept {
+	return ("Lv Window Exception");
+}
+
+HRESULT Window::HrException::getErrorCode() const noexcept {
 	return (hr);
 }
-std::string  Window::Exception::getErrorString() const noexcept {
-	return (translateErrorCode(hr));
+std::string  Window::HrException::getErrorDescription() const noexcept {
+	return (Exception::translateErrorCode(hr));
+}
+
+const char* Window::NoGfxException::getType() const noexcept {
+	return ("Lv Rain Window Exception [No Graphics]");
 }
 
 // ==== Window Class ====//
@@ -123,6 +127,8 @@ std::optional<int> Window::processMessages() noexcept {
 }
 
 Graphics& Window::Gfx() {
+	if (!pGfx)
+		throw LVWND_NOGFX_EXCEPT();
 	return (*pGfx);
 }
 
